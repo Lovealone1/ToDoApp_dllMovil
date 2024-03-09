@@ -6,6 +6,7 @@ class TaskWidget extends StatelessWidget {
   final ValueChanged<bool?>? onCheckboxChanged;
   final bool isCompleted;
   final String taskType;
+  final Function()? removeTask; // Nuevo parámetro para llamar al método removeTask
 
   TaskWidget({
     required this.taskName,
@@ -13,6 +14,7 @@ class TaskWidget extends StatelessWidget {
     required this.onCheckboxChanged,
     required this.isCompleted,
     required this.taskType,
+    this.removeTask, // Actualización del constructor
   });
 
   @override
@@ -26,6 +28,11 @@ class TaskWidget extends StatelessWidget {
       iconColor = Colors.red;
     }
 
+    // Cambiar el color del icono a verde si la tarea está completada
+    if (isCompleted) {
+      iconColor = Colors.green;
+    }
+
     return ListTile(
       title: Row(
         children: [
@@ -34,6 +41,9 @@ class TaskWidget extends StatelessWidget {
               taskName,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
+              style: TextStyle(
+                decoration: isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+              ),
             ),
           ),
           GestureDetector(
@@ -56,7 +66,12 @@ class TaskWidget extends StatelessWidget {
       ),
       trailing: IconButton(
         icon: Icon(Icons.delete_outline_rounded),
-        onPressed: onDelete,
+        onPressed: () {
+          if (removeTask != null) {
+            removeTask!(); // Llama al método removeTask si está definido
+          }
+          onDelete(); // Llama a la función onDelete
+        },
       ),
     );
   }

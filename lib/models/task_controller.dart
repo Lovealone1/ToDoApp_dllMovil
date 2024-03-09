@@ -14,7 +14,7 @@ class TaskController {
     _tasks.add(task);
   }
 
-  void toggleTask(int index) {
+  void toggleTaskCompletion(int index) {
     _tasks[index].completed = !_tasks[index].completed;
   }
 
@@ -22,6 +22,7 @@ class TaskController {
     _tasks.removeAt(index);
   }
 }
+
 
 class Task {
   final String taskName;

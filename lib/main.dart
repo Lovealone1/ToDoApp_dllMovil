@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:task_app/widgets/widget_task.dart';
+import 'package:task_app/views/alltasks_view.dart';
+import 'package:task_app/views/activetasks_view.dart';
+import 'package:task_app/views/completedtasks_view.dart'; // Importa la vista de tareas completadas
 import 'package:task_app/widgets/widget_addtask.dart';
 import 'package:task_app/models/task_controller.dart';
-import 'package:intl/intl.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -26,12 +28,15 @@ class ToDoListScreen extends StatefulWidget {
 }
 
 class _ToDoListScreenState extends State<ToDoListScreen> {
-  late TaskController taskController; // Definición de taskController
+  late TaskController taskController;
+  late PageController pageController;
+  int pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    taskController = TaskController(); // Inicialización de taskController
+    taskController = TaskController();
+    pageController = PageController();
   }
 
   void _showAddTaskDialog(BuildContext context) {
@@ -41,85 +46,37 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         return AddTaskDialog(taskController: taskController);
       },
     ).then((_) {
-      // Actualizar el estado después de agregar una tarea
       setState(() {});
     });
   }
-
-  void _showTaskDetailsDialog(BuildContext context, String taskName, String taskType, DateTime startDate, DateTime dueDate) {
-    // Formatear las fechas en el formato deseado
-    String formattedStartDate = DateFormat('dd/MM/yyyy').format(startDate);
-    String formattedDueDate = DateFormat('dd/MM/yyyy').format(dueDate);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Detalles de la Tarea'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Nombre de la Tarea: $taskName'),
-              Text('Tipo de Tarea: $taskType'),
-              Text('Fecha de Inicio: $formattedStartDate'),
-              Text('Fecha de Fin: $formattedDueDate'),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cerrar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Tareas'),
+        title: Text('ToDo APP'),
       ),
-      body: ListView.builder(
-        itemCount: taskController.tasks.length,
-        itemBuilder: (context, index) {
-          // Obtener el estado de completitud de la tarea
-          bool isCompleted = taskController.tasks[index].completed;
-
-          return GestureDetector(
-            onTap: () {
-              _showTaskDetailsDialog(
-                context,
-                taskController.tasks[index].taskName,
-                taskController.tasks[index].taskType,
-                taskController.tasks[index].startDate,
-                taskController.tasks[index].dueDate,
-              );
-            },
-            child: TaskWidget(
-              taskName: taskController.tasks[index].taskName,
-              taskType: taskController.tasks[index].taskType, // Agregar el tipo de tarea
-              onDelete: () {
-                setState(() {
-                  taskController.removeTask(index);
-                });
-              },
-              isCompleted: isCompleted,
-              onCheckboxChanged: (value) {
-                // Cambiar el estado de completitud de la tarea
-                setState(() {
-                  taskController.toggleTask(index);
-                });
-              },
-            ),
-          );
+      body: PageView(
+        controller: pageController,
+        onPageChanged: (index) {
+          setState(() {
+            pageIndex = index;
+          });
         },
+        children: [
+          AllTasksView(
+            taskController: taskController,
+            toggleTaskCompletion: _toggleTaskCompletion,
+          ),
+          ActiveTasksView(
+            taskController: taskController,
+            toggleTaskCompletion: _toggleTaskCompletion,
+          ),
+          CompletedTasks( // Agrega la vista de tareas completadas
+            taskController: taskController,
+            toggleTaskCompletion: _toggleTaskCompletion,
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTaskDialog(context),
@@ -127,6 +84,17 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         child: Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: pageIndex,
+        onTap: (index) {
+          setState(() {
+            pageIndex = index;
+            pageController.animateToPage(
+              index,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          });
+        },
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
@@ -143,5 +111,17 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         ],
       ),
     );
+  }
+
+  void _toggleTaskCompletion(int index) {
+    setState(() {
+      taskController.toggleTaskCompletion(index);
+    });
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
+    super.dispose();
   }
 }
