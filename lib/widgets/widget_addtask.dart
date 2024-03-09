@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:task_app/models/task_controller.dart';
 
 class AddTaskDialog extends StatefulWidget {
@@ -57,7 +56,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add Task'),
+      title: Text('Agregar Tarea'),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +64,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
           children: [
             TextField(
               controller: _taskNameController,
-              decoration: InputDecoration(labelText: 'Nombre de la tarea'),
+              decoration: InputDecoration(labelText: 'Nombre de la Tarea'),
             ),
             TextField(
               controller: _descriptionController,
@@ -109,9 +108,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () {
-            Navigator.of(context).pop(); // Close dialog on cancel
+            Navigator.of(context).pop(); // Cerrar el diálogo al cancelar
           },
-          child: Text('Cancel'),
+          child: Text('Cancelar'),
         ),
         ElevatedButton(
           onPressed: _selectedTaskType == _taskTypes[0]
@@ -132,10 +131,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       taskType: _selectedTaskType,
                     );
                     widget.taskController.addTask(newTask);
-                    Navigator.of(context).pop(); // Close dialog on submit
+                    Navigator.of(context).pop(); // Cerrar el diálogo al enviar
                   }
                 },
-          child: Text('Add'),
+          child: Text('Agregar'),
         ),
       ],
     );
