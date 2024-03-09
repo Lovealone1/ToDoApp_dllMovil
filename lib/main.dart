@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_app/widgets/widget_task.dart';
-
+import 'package:task_app/widgets/widget_addtask.dart';
+import 'package:task_app/models/task_controller.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,7 +26,25 @@ class ToDoListScreen extends StatefulWidget {
 }
 
 class _ToDoListScreenState extends State<ToDoListScreen> {
-  List<String> tasks = ['Task 1', 'Task 2', 'Task 3'];
+  late TaskController taskController; // Definición de taskController
+
+  @override
+  void initState() {
+    super.initState();
+    taskController = TaskController(); // Inicialización de taskController
+  }
+
+  void _showAddTaskDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AddTaskDialog(taskController: taskController);
+      },
+    ).then((_) {
+      // Actualizar el estado después de agregar una tarea
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +53,13 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         title: Text('Lista de Tareas'),
       ),
       body: ListView.builder(
-        itemCount: tasks.length,
+        itemCount: taskController.tasks.length,
         itemBuilder: (context, index) {
           return TaskWidget(
-            taskName: tasks[index],
+            taskName: taskController.tasks[index].taskName,
             onDelete: () {
               setState(() {
-                tasks.removeAt(index);
+                taskController.removeTask(index);
               });
             },
             onCheckboxChanged: (value) {
@@ -48,6 +67,11 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
             },
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddTaskDialog(context),
+        tooltip: 'Agregar tarea',
+        child: Icon(Icons.add),
       ),
     );
   }
