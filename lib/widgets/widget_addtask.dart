@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:task_app/models/task_controller.dart';
+import 'package:provider/provider.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  final TaskController taskController;
-
-  AddTaskDialog({required this.taskController});
-
   @override
   _AddTaskDialogState createState() => _AddTaskDialogState();
 }
@@ -123,6 +120,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       ),
                     );
                   } else {
+                    // Obtener la instancia de TaskProvider
+                    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+
                     Task newTask = Task(
                       taskName: _taskNameController.text,
                       description: _descriptionController.text,
@@ -130,7 +130,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       dueDate: _dueDate,
                       taskType: _selectedTaskType,
                     );
-                    widget.taskController.addTask(newTask);
+                    taskProvider.addTask(newTask);
                     Navigator.of(context).pop(); // Cerrar el diálogo al enviar
                   }
                 },

@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:task_app/models/task_controller.dart';
 import 'package:task_app/widgets/widget_task.dart';
+import 'package:provider/provider.dart';
+import 'package:task_app/widgets/widget_showtaskdialog.dart'; 
 
 class CompletedTasks extends StatelessWidget {
-  final TaskController taskController;
-  final Function(int) toggleTaskCompletion;
-
-  const CompletedTasks({
-    Key? key,
-    required this.taskController,
-    required this.toggleTaskCompletion,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    List<Task> incompleteTasks = taskController.tasks.where((task) => task.completed).toList();
+    // Obtiene la instancia de TaskProvider
+    final taskProvider = Provider.of<TaskProvider>(context);
+    List<Task> completedTasks = taskProvider.tasks.where((task) => task.completed).toList();
 
-    if (incompleteTasks.isEmpty) {
+    if (completedTasks.isEmpty) {
       return Center(
         child: Text(
           'No has completado ninguna tarea',
@@ -27,63 +21,31 @@ class CompletedTasks extends StatelessWidget {
     }
 
     return ListView.builder(
-      itemCount: incompleteTasks.length,
+      itemCount: completedTasks.length,
       itemBuilder: (context, index) {
-        bool isCompleted = incompleteTasks[index].completed;
+        bool isCompleted = completedTasks[index].completed;
 
         return GestureDetector(
           onTap: () {
-            _showTaskDetailsDialog(
+            showTaskDetailsDialog( // Utiliza la función importada
               context,
-              incompleteTasks[index].taskName,
-              incompleteTasks[index].taskType,
-              incompleteTasks[index].startDate,
-              incompleteTasks[index].dueDate,
+              completedTasks[index].taskName,
+              completedTasks[index].taskType,
+              completedTasks[index].startDate,
+              completedTasks[index].dueDate,
             );
           },
           child: TaskWidget(
-            taskName: incompleteTasks[index].taskName,
-            taskType: incompleteTasks[index].taskType,
+            taskName: completedTasks[index].taskName,
+            taskType: completedTasks[index].taskType,
             onDelete: () {
-              taskController.removeTask(taskController.tasks.indexOf(incompleteTasks[index]));
+              taskProvider.removeTask(taskProvider.tasks.indexOf(completedTasks[index]));
             },
             isCompleted: isCompleted,
             onCheckboxChanged: (value) {
-              toggleTaskCompletion(taskController.tasks.indexOf(incompleteTasks[index]));
+              taskProvider.toggleTaskCompletion(taskProvider.tasks.indexOf(completedTasks[index]));
             },
           ),
-        );
-      },
-    );
-  }
-
-  void _showTaskDetailsDialog(BuildContext context, String taskName, String taskType, DateTime startDate, DateTime dueDate) {
-    String formattedStartDate = DateFormat('dd/MM/yyyy').format(startDate);
-    String formattedDueDate = DateFormat('dd/MM/yyyy').format(dueDate);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Detalles de la Tarea'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Nombre de la Tarea: $taskName'),
-              Text('Tipo de Tarea: $taskType'),
-              Text('Fecha de Inicio: $formattedStartDate'),
-              Text('Fecha de Fin: $formattedDueDate'),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cerrar'),
-            ),
-          ],
         );
       },
     );

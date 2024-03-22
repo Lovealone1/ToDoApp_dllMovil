@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:task_app/models/task_controller.dart';
 import 'package:task_app/widgets/widget_task.dart';
+import 'package:provider/provider.dart';
+import 'package:task_app/widgets/widget_showtaskdialog.dart';
 
 class AllTasksView extends StatelessWidget {
-  final TaskController taskController;
-  final Function(int) toggleTaskCompletion;
-
-  const AllTasksView({
-    Key? key,
-    required this.taskController,
-    required this.toggleTaskCompletion,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return taskController.tasks.isEmpty // Verificar si la lista de tareas está vacía
+    // Obtiene la instancia de TaskProvider
+    final taskProvider = Provider.of<TaskProvider>(context);
+
+    return taskProvider.tasks.isEmpty // Verifica si la lista de tareas está vacía
         ? Center(
             child: Text(
               'No hay tareas para mostrar :(\n¡Agrega una!',
@@ -24,68 +19,34 @@ class AllTasksView extends StatelessWidget {
             ),
           )
         : ListView.builder(
-            itemCount: taskController.tasks.length,
+            itemCount: taskProvider.tasks.length,
             itemBuilder: (context, index) {
               // Obtener el estado de completitud de la tarea
-              bool isCompleted = taskController.tasks[index].completed;
+              bool isCompleted = taskProvider.tasks[index].completed;
 
               return GestureDetector(
                 onTap: () {
-                  _showTaskDetailsDialog(
+                  showTaskDetailsDialog( // Llama a la función showTaskDetailsDialog
                     context,
-                    taskController.tasks[index].taskName,
-                    taskController.tasks[index].taskType,
-                    taskController.tasks[index].startDate,
-                    taskController.tasks[index].dueDate,
+                    taskProvider.tasks[index].taskName,
+                    taskProvider.tasks[index].taskType,
+                    taskProvider.tasks[index].startDate,
+                    taskProvider.tasks[index].dueDate,
                   );
                 },
                 child: TaskWidget(
-                  taskName: taskController.tasks[index].taskName,
-                  taskType: taskController.tasks[index].taskType,
+                  taskName: taskProvider.tasks[index].taskName,
+                  taskType: taskProvider.tasks[index].taskType,
                   onDelete: () {
-                    taskController.removeTask(index);
+                    taskProvider.removeTask(index);
                   },
                   isCompleted: isCompleted,
                   onCheckboxChanged: (value) {
-                    toggleTaskCompletion(index); // Cambia el estado de completitud de la tarea
+                    taskProvider.toggleTaskCompletion(index); // Cambia el estado de completitud de la tarea
                   },
                 ),
               );
             },
           );
-  }
-
-  // Esta es la función para mostrar los detalles de la tarea
-  void _showTaskDetailsDialog(BuildContext context, String taskName, String taskType, DateTime startDate, DateTime dueDate) {
-    // Formatear las fechas en el formato deseado
-    String formattedStartDate = DateFormat('dd/MM/yyyy').format(startDate);
-    String formattedDueDate = DateFormat('dd/MM/yyyy').format(dueDate);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Detalles de la Tarea'),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Nombre de la Tarea: $taskName'),
-              Text('Tipo de Tarea: $taskType'),
-              Text('Fecha de Inicio: $formattedStartDate'),
-              Text('Fecha de Fin: $formattedDueDate'),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cerrar'),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

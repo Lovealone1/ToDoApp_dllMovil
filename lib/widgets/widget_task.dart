@@ -6,7 +6,7 @@ class TaskWidget extends StatelessWidget {
   final ValueChanged<bool?>? onCheckboxChanged;
   final bool isCompleted;
   final String taskType;
-  final Function()? removeTask; // Nuevo parámetro para llamar al método removeTask
+  final Function()? removeTask;
 
   TaskWidget({
     required this.taskName,
@@ -14,21 +14,19 @@ class TaskWidget extends StatelessWidget {
     required this.onCheckboxChanged,
     required this.isCompleted,
     required this.taskType,
-    this.removeTask, // Actualización del constructor
+    this.removeTask,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color iconColor = Colors.transparent; // Color predeterminado del icono
+    Color iconColor = Colors.transparent;
 
-    // Verificar el tipo de tarea y ajustar el color del icono en consecuencia
     if (taskType == 'Tarea') {
       iconColor = Colors.orange;
     } else if (taskType == 'Actividad calificable') {
       iconColor = Colors.red;
     }
 
-    // Cambiar el color del icono a verde si la tarea está completada
     if (isCompleted) {
       iconColor = Colors.green;
     }
@@ -49,7 +47,7 @@ class TaskWidget extends StatelessWidget {
           GestureDetector(
             onTap: () {
               if (!isCompleted && onCheckboxChanged != null) {
-                onCheckboxChanged!(!isCompleted); // Cambia el estado y llama a la función
+                onCheckboxChanged!(!isCompleted);
               }
             },
             child: Icon(
@@ -67,10 +65,34 @@ class TaskWidget extends StatelessWidget {
       trailing: IconButton(
         icon: Icon(Icons.delete_outline_rounded),
         onPressed: () {
-          if (removeTask != null) {
-            removeTask!(); // Llama al método removeTask si está definido
-          }
-          onDelete(); // Llama a la función onDelete
+          // Mostrar el cuadro de diálogo de confirmación
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Confirmar eliminación'),
+                content: Text('¿Estás seguro de que quieres eliminar esta tarea?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Cerrar el cuadro de diálogo sin eliminar la tarea
+                    },
+                    child: Text('Cancelar'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Cerrar el cuadro de diálogo antes de eliminar la tarea
+                      if (removeTask != null) {
+                        removeTask!(); // Llama al método removeTask si está definido
+                      }
+                      onDelete(); // Llama a la función onDelete
+                    },
+                    child: Text('Eliminar'),
+                  ),
+                ],
+              );
+            },
+          );
         },
       ),
     );

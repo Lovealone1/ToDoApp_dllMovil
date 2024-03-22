@@ -4,6 +4,7 @@ import 'package:task_app/views/activetasks_view.dart';
 import 'package:task_app/views/completedtasks_view.dart'; // Importa la vista de tareas completadas
 import 'package:task_app/widgets/widget_addtask.dart';
 import 'package:task_app/models/task_controller.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,12 +13,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ToDo List App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(
+      create: (context) => TaskProvider(), // Inicializa TaskProvider
+      child: MaterialApp(
+        title: 'ToDo List App',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: ToDoListScreen(),
       ),
-      home: ToDoListScreen(),
     );
   }
 }
@@ -28,14 +32,12 @@ class ToDoListScreen extends StatefulWidget {
 }
 
 class _ToDoListScreenState extends State<ToDoListScreen> {
-  late TaskController taskController;
   late PageController pageController;
   int pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    taskController = TaskController();
     pageController = PageController();
   }
 
@@ -43,7 +45,7 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AddTaskDialog(taskController: taskController);
+        return AddTaskDialog();
       },
     ).then((_) {
       setState(() {});
@@ -64,18 +66,9 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
           });
         },
         children: [
-          AllTasksView(
-            taskController: taskController,
-            toggleTaskCompletion: _toggleTaskCompletion,
-          ),
-          ActiveTasksView(
-            taskController: taskController,
-            toggleTaskCompletion: _toggleTaskCompletion,
-          ),
-          CompletedTasks( // Agrega la vista de tareas completadas
-            taskController: taskController,
-            toggleTaskCompletion: _toggleTaskCompletion,
-          ),
+          AllTasksView(),
+          ActiveTasksView(),
+          CompletedTasks(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -111,12 +104,6 @@ class _ToDoListScreenState extends State<ToDoListScreen> {
         ],
       ),
     );
-  }
-
-  void _toggleTaskCompletion(int index) {
-    setState(() {
-      taskController.toggleTaskCompletion(index);
-    });
   }
 
   @override
